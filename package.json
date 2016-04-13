@@ -1,0 +1,23 @@
+{
+  "name": "ploadr.io",
+  "version": "1.0.0",
+  "description": "image sharing app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlaDdos/Ploadr.io.git"
+  },
+  "author": "GlaDdos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GlaDdos/Ploadr.io/issues"
+  },
+  "homepage": "https://github.com/GlaDdos/Ploadr.io#readme",
+  "dependencies": {
+    "express": "^3.5.3",
+    "express3-handlebars": "^0.5.2"
+  }
+}
