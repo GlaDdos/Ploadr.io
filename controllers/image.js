@@ -1,6 +1,6 @@
 module.exports = {
   index: function(request, response){
-    response.send('the image:index GET controller ' + request.params.image_id);
+    response.render('image');
   },
 
   create: function(request, response){

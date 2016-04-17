@@ -6,6 +6,7 @@ var methodOverride = require('method-override');
 var cookieParser = require('cookie-parser');
 var express = require('express');
 var errorHandler = require('errorhandler');
+var moment = require('moment');
 
 var routes = require('./routes');
 
@@ -14,7 +15,12 @@ module.exports = function(app){
   app.engine('handlebars', exphbs.create({
     defaultLayout: 'main',
     layoutDir: app.get('views')  + '/layouts',
-    partialsDir: [app.get('views') + '/partials']
+    partialsDir: [app.get('views') + '/partials'],
+    helpers: {
+      timeago: function(timestamp){
+        return moment(timestamp).startOf('minute').fromNow();
+      }
+    }
   }).engine);
 
   app.set('view engine', 'handlebars');
