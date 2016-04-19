@@ -7,6 +7,9 @@ var cookieParser = require('cookie-parser');
 var express = require('express');
 var errorHandler = require('errorhandler');
 var moment = require('moment');
+var multiparty = require('connect-multiparty');
+
+var  multipartyMid = multiparty({uploadDir: path.join(__dirname, '../public/upload/temp')});
 
 var routes = require('./routes');
 
@@ -26,12 +29,8 @@ module.exports = function(app){
   app.set('view engine', 'handlebars');
 
   app.use(logger('dev'));
-  app.use(bodyParser({
-    uploadDir: path.join(__dirname, '../public/upload/temp')
-  }));
-
+  app.use(multipartyMid);
   app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: false }));
   app.use(methodOverride());
   app.use(cookieParser('some-secret-value-here'));
   app.use(app.router);
