@@ -1,11 +1,40 @@
 var fs = require('fs');
 var path = require('path');
 var sidebar = require('../helpers/sidebar');
+var Models = require('../models');
 
 module.exports = {
+
   index: function(request, response){
-    sidebar(viewModel, function(er, viewModel){
-      response.render('image', viewModel);
+
+    var viewModel = {
+      image: {},
+      comments: []
+    };
+
+    Models.Image.findOne({
+      filename: { $regex: request.params.image_id }},
+      function(err, image) {
+        if(err){ throw err; }
+        if(image){
+          image.views += 1;
+          viewModel.image = image;
+          image.save();
+
+          Models.Comment.find({ image_id: image._id }, {}, { sort: { 'timestamp': 1 }},
+            function (err, comments){
+              if(err){ throw err; }
+
+              viewModel.comments = comments;
+
+              sidebar(viewModel, function(er, viewModel){
+                response.render('image', viewModel);
+            });
+          }
+        );
+        }else{
+          response.redirect('/');
+        }
     });
   },
 
@@ -14,11 +43,16 @@ module.exports = {
       var possible = 'abcdefghijklmnoprstuvwxyz0123456789';
       var imgUrl ='';
 
-      console.log(request.files);
-
       for(var i = 0; i < 6; i++){
         imgUrl += possible.charAt(Math.floor(Math.random() * possible.length));
       }
+
+
+      Models.Image.find( { filename: imgUrl }, function(err, images){
+        if(images.length > 0){
+          saveImage();
+        }else{
+
 
       var tempPath = request.files.file.path;
       var ext = path.extname(request.files.file.name).toLowerCase();
@@ -28,7 +62,16 @@ module.exports = {
         fs.rename(tempPath, targetPath, function(err){
           if(err) throw err;
 
-          response.redirect('/images/' + imgUrl);
+          var newImg = new Models.Image({
+            title: request.body.title,
+            description: request.body.description,
+            filename: imgUrl + ext
+          });
+          newImg.save(function(err, image){
+            console.log('Successfully inserted image: ' + image.filename);
+            response.redirect('/images/' + imgUrl);
+          });
+
         });
       }else {
         fs.unlink(tempPath, function(err){
@@ -37,46 +80,18 @@ module.exports = {
           response.json(500, {error: 'Only image files are allowed.'});
         });
       }
-   };
+    }
+  });
+  };
 
    saveImage();
   },
 
   like: function(request, response){
-    response.send('The image:like POST controller');
+    response.json({likes: 1});
   },
 
   comment: function(request, response){
     response.send('The image:comment POST controller');
   }
-};
-
-var viewModel = {
-  images: {
-    uniqueId:    1,
-    title:       'Sameple image 1',
-    description: 'This is a sample image.',
-    filename:    'sample1.jpg',
-    views:       0,
-    likes:       0,
-    timestamp:   Date.now(),
-  },
-  comments: [
-    {
-      image_id: 1,
-      email:    'test@test.com',
-      name:     'test Tester',
-      gravatar: 'http://lorempixel.com/75/75/animals/1',
-      comment:  'This is a test coment...',
-      timestamp: Date.now()
-    },
-    {
-      image_id: 1,
-      email:    'test@testing.com',
-      name:     'Test tester',
-      gravatar: 'http://lorempixel.com/75/75/animals/2',
-      comment:  'Another comment!',
-      timestamp: Date.now()
-    }
-  ]
 };
