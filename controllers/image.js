@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var sidebar = require('../helpers/sidebar');
 var Models = require('../models');
+var md5 = require('md5');
 
 module.exports = {
 
@@ -88,10 +89,38 @@ module.exports = {
   },
 
   like: function(request, response){
-    response.json({likes: 1});
+    Models.Image.findOne({ filename: { $regex: request.params.image_id }},
+      function(err, image){
+        if(!err && image){
+          image.likes++;
+          image.save(function(err){
+            if(err){
+              response.json(err);
+            } else {
+              response.json({likes: image.likes });
+            }
+          });
+        }
+    });
   },
 
   comment: function(request, response){
-    response.send('The image:comment POST controller');
+    Models.Image.findOne({ filename: { $regex: request.params.image_id }},
+    function(err, image){
+      if (!err && image) {
+        var newComment = new Models.Comment(request.body);
+        newComment.gravatar = md5(newComment.email);
+        newComment.image_id = image._id;
+
+        console.dir(request.body);
+        newComment.save(function(err, comment){
+          if(err) { throw err; }
+
+          response.redirect('/images/' + image.uniqueId + '#' + comment._id);
+        });
+      }else{
+        response.redirect('/');
+      }
+    });
   }
 };

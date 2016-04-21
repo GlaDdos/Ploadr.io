@@ -30,6 +30,7 @@ module.exports = function(app){
 
   app.use(logger('dev'));
   app.use(multipartyMid);
+  app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   app.use(methodOverride());
   app.use(cookieParser('some-secret-value-here'));
